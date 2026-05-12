@@ -86,9 +86,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* BRAND CARDS */
 .brands-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .brand-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;box-shadow:var(--shadow)}
-.brand-card-bg{position:absolute;inset:0;background-size:cover;background-position:center;border-radius:var(--radius);opacity:.08;transition:opacity .2s}
-.brand-card:hover .brand-card-bg{opacity:.13}
-.brand-card-content{position:relative;z-index:1}
+.brand-card-bg{position:absolute;inset:0;background-size:cover;background-position:center;border-radius:var(--radius);opacity:.28;transition:opacity .2s}
+.brand-card:hover .brand-card-bg{opacity:.35}
+.brand-card-content{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
+.brand-card-body{flex:1;padding-bottom:8px}
+.brand-card-strip{background:rgba(255,255,255,.94);border-top:0.5px solid var(--border);margin:0 -18px -18px;padding:12px 18px}
 .brand-card::after{content:'';position:absolute;inset:0;border-radius:var(--radius);opacity:0;transition:opacity .2s;background:linear-gradient(135deg,rgba(200,240,96,.04),transparent)}
 .brand-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .brand-card:hover::after{opacity:1}
@@ -271,13 +273,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <!-- DETAIL PANEL -->
 <div class="panel-overlay" id="panel-overlay" onclick="closePanelClick(event)">
   <div class="detail-panel">
-    <div class="panel-header">
-      <div class="panel-avatar" id="panel-avatar">—</div>
-      <div class="panel-brand-info">
-        <div class="panel-brand-name" id="panel-name">—</div>
-        <div class="panel-brand-sub" id="panel-sub">—</div>
+    <div id="panel-logo-header" style="margin:-28px -28px 20px;height:140px;background:var(--surface2);border-bottom:1px solid var(--border);position:relative;overflow:hidden;border-radius:0;display:flex;align-items:flex-end">
+      <div id="panel-logo-bg" style="position:absolute;inset:0;background-size:cover;background-position:center;opacity:.2"></div>
+      <div style="position:relative;z-index:1;width:100%;background:rgba(255,255,255,.9);border-top:0.5px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="panel-avatar" id="panel-avatar">—</div>
+          <div class="panel-brand-info">
+            <div class="panel-brand-name" id="panel-name">—</div>
+            <div class="panel-brand-sub" id="panel-sub">—</div>
+          </div>
+        </div>
+        <button class="panel-close" onclick="closePanel()">✕</button>
       </div>
-      <button class="panel-close" onclick="closePanel()">✕</button>
     </div>
     <div class="panel-actions">
       <button class="panel-btn" onclick="editCurrentBrand()">✎ Edit brand</button>
@@ -528,19 +535,20 @@ function renderPartners() {
     return `<div class="brand-card" onclick="openPanel('${b.name}')">
       ${b.logo ? `<div class="brand-card-bg" style="background-image:url('${b.logo}')"></div>` : ''}
       <div class="brand-card-content">
-      <div class="card-top">
-        <div class="brand-avatar">${initials(b.name)}</div>
-        <div class="brand-info">
-          <div class="brand-name">${b.name}</div>
-          <div class="brand-category">${chCount} channel${chCount!==1?'s':''}</div>
+        <div class="brand-card-body">
+          <div class="card-top">
+            <div class="brand-avatar">${initials(b.name)}</div>
+            <div class="brand-info">
+              <div class="brand-name">${b.name}</div>
+              <div class="brand-category">${chCount} channel${chCount!==1?'s':''}</div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="channel-tags">${chs.map(chTag).join('') || '<span style="color:var(--text3);font-size:12px">No channels yet</span>'}</div>
-      ${b.ownership ? `<div style="margin-bottom:10px"><span class="ownership-badge">${b.ownership}</span></div>` : ''}
-      <div class="card-footer">
-        <span class="card-meta">${b.notes ? '📝 Has notes' : ''}</span>
-        <span class="card-arrow">→</span>
-      </div>
+        <div class="brand-card-strip">
+          <div class="channel-tags" style="margin-bottom:${b.ownership?'6px':'0'}">${chs.map(chTag).join('') || '<span style="color:var(--text3);font-size:12px">No channels yet</span>'}</div>
+          ${b.ownership ? `<div><span class="ownership-badge">${b.ownership}</span></div>` : ''}
+          <div style="display:flex;justify-content:flex-end;margin-top:4px"><span class="card-arrow">→</span></div>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -560,6 +568,15 @@ function openPanel(name) {
   openBrandIdx = b.idx;
   document.getElementById('panel-avatar').textContent = initials(b.name);
   document.getElementById('panel-name').textContent = b.name;
+  // Logo header
+  const logoBg = document.getElementById('panel-logo-bg');
+  if(b.logo) {
+    logoBg.style.backgroundImage = `url('${b.logo}')`;
+    logoBg.style.opacity = '.25';
+  } else {
+    logoBg.style.backgroundImage = 'none';
+    logoBg.style.opacity = '0';
+  }
   const chs = getChannels(b);
   document.getElementById('panel-sub').textContent = chs.length ? chs.map(c=>({target:'Target',chewy:'Chewy',iherb:'iHerb',quill:'Quill'}[c])).join(' · ') : 'No channels yet';
 
