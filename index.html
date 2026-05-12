@@ -347,8 +347,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <script>
 const SHEET_ID = "1a64rxl0Qwf7pJ_nr22VFqykVVsRcEVFff3YI4px96Rc";
 const TAB = "Live Partner Brands ";
-const API_KEY = "AIzaSyCovjfYaLsniNNFpevRATCrydXPnBhGRwQ";
 const CLIENT_ID = "782243679840-1lh1ce0p4fqt58fg945cq0gi9d0bv1ek.apps.googleusercontent.com";
+const GID = "0"; // tab gid for CSV export
 const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 // Col indices (0-based): Brand Name, Target Link, iHerb Link, Chewy Link, Quill Link, Google Sheet, Notes, Projects
@@ -403,13 +403,25 @@ function setAuthUI(signedIn) {
 async function loadPartners() {
   document.getElementById('sync-time').textContent = 'Syncing...';
   try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(TAB)}?key=${API_KEY}`;
-    const r = await fetch(url);
-    const d = await r.json();
-    if(d.error) throw new Error(d.error.message);
-    const rows = (d.values || []).slice(1).filter(r => r && r[0]);
+    // Use public CSV export — no API key needed, works as long as sheet is public
+    let rows;
+    if(accessToken) {
+      // If signed in, use Sheets API with OAuth token for freshest data
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(TAB)}`;
+      const r = await fetch(url, {headers:{'Authorization':'Bearer '+accessToken}});
+      const d = await r.json();
+      if(d.error) throw new Error(d.error.message);
+      rows = (d.values || []).slice(1).filter(r => r && r[0]);
+    } else {
+      // Public CSV export — no key needed
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+      const r = await fetch(url);
+      const text = await r.text();
+      const allRows = parseCSV(text);
+      rows = allRows.slice(1).filter(r => r && r[0]);
+    }
     brands = rows.map((r, i) => ({
-      idx: i + 2, // 1-indexed row in sheet (row 1 = header, data starts row 2)
+      idx: i + 2,
       name: (r[COLS.name]||'').trim(),
       target: (r[COLS.target]||'').trim(),
       iherb: (r[COLS.iherb]||'').trim(),
@@ -427,6 +439,22 @@ async function loadPartners() {
     document.getElementById('sync-time').textContent = 'Sync failed';
     document.getElementById('partners-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⚠</div><div class="empty-title">Could not load sheet</div><div class="empty-sub">${e.message}</div></div>`;
   }
+}
+
+// ── CSV PARSER ──
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cell = '', inQ = false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){if(c==='"'&&text[i+1]==='"'){cell+='"';i++;}else if(c==='"'){inQ=false;}else{cell+=c;}}
+    else if(c==='"'){inQ=true;}
+    else if(c===','){row.push(cell);cell='';}
+    else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell='';}
+    else if(c!=='\r'){cell+=c;}
+  }
+  if(cell||row.length){row.push(cell);rows.push(row);}
+  return rows;
 }
 
 // ── RENDER ──
