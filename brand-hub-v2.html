@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0E0F0F;
+  --surface: #161818;
+  --surface2: #1E2020;
+  --surface3: #252828;
+  --border: #2A2D2D;
+  --border2: #323636;
+  --text: #F0F0EE;
+  --text2: #9A9E9E;
+  --text3: #5A5F5F;
+  --accent: #C8F060;
+  --accent2: #A8D040;
+  --target: #FF6B6B;
+  --chewy: #FF8C42;
+  --iherb: #4CAF7D;
+  --quill: #5B9CF6;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.logo-mark{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.sidebar-nav{padding:12px 10px;flex:1}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:14px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;color:var(--text2);transition:var(--transition);border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;position:relative}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface3);color:var(--text)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--accent);border-radius:0 3px 3px 0}
+.nav-icon{font-size:16px;opacity:.7}
+.nav-badge{margin-left:auto;font-size:11px;font-family:'DM Mono',monospace;background:var(--surface3);color:var(--text2);padding:1px 7px;border-radius:20px;min-width:22px;text-align:center}
+.nav-item.active .nav-badge{background:var(--accent);color:#000}
+.sidebar-bottom{padding:14px 10px;border-top:1px solid var(--border)}
+.sync-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition)}
+.sync-btn:hover{border-color:var(--accent);color:var(--accent)}
+.sync-time{font-size:11px;color:var(--text3);padding:6px 10px 0}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0;background:var(--surface)}
+.page-title{font-size:16px;font-weight:600}
+.page-sub{font-size:13px;color:var(--text3);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 12px;height:34px;min-width:200px}
+.search-box input{background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;width:100%}
+.search-box input::placeholder{color:var(--text3)}
+.add-btn{display:flex;align-items:center;gap:6px;height:34px;padding:0 14px;background:var(--accent);color:#000;font-size:13px;font-weight:600;border:none;border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition)}
+.add-btn:hover{background:var(--accent2)}
+.content{flex:1;overflow-y:auto;padding:24px 28px}
+
+/* AUTH BAR */
+.auth-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);margin-bottom:20px;font-size:13px}
+.auth-status{display:flex;align-items:center;gap:8px;color:var(--text2)}
+.auth-dot{width:8px;height:8px;border-radius:50%;background:var(--text3)}
+.auth-dot.connected{background:var(--iherb);box-shadow:0 0 6px rgba(76,175,125,.5)}
+.auth-sign-btn{padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition)}
+.auth-sign-btn:hover{border-color:var(--accent)}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+
+/* FILTER ROW */
+.filter-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-chip{display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border2);border-radius:20px;font-size:12px;color:var(--text2);cursor:pointer;background:none;font-family:'DM Sans',sans-serif;transition:var(--transition)}
+.filter-chip:hover{border-color:var(--text2);color:var(--text)}
+.filter-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(200,240,96,.08)}
+.ch-dot{width:7px;height:7px;border-radius:50%}
+
+/* BRAND CARDS */
+.brands-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.brand-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden}
+.brand-card::after{content:'';position:absolute;inset:0;border-radius:var(--radius);opacity:0;transition:opacity .2s;background:linear-gradient(135deg,rgba(200,240,96,.04),transparent)}
+.brand-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.brand-card:hover::after{opacity:1}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.brand-avatar{width:40px;height:40px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0}
+.brand-info{flex:1;margin-left:12px}
+.brand-name{font-size:15px;font-weight:600;margin-bottom:2px}
+.brand-category{font-size:12px;color:var(--text3)}
+.channel-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.ch-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;font-family:'DM Mono',monospace}
+.ch-target{background:rgba(255,107,107,.12);color:var(--target)}
+.ch-chewy{background:rgba(255,140,66,.12);color:var(--chewy)}
+.ch-iherb{background:rgba(76,175,125,.12);color:var(--iherb)}
+.ch-quill{background:rgba(91,156,246,.12);color:var(--quill)}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
+.card-meta{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.card-arrow{font-size:16px;color:var(--text3);transition:var(--transition)}
+.brand-card:hover .card-arrow{color:var(--accent);transform:translateX(2px)}
+
+/* DETAIL PANEL */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:200}
+.panel-overlay.open{display:flex;justify-content:flex-end}
+.detail-panel{width:500px;background:var(--surface);border-left:1px solid var(--border);height:100%;overflow-y:auto;padding:28px;transform:translateX(100%);transition:transform .3s cubic-bezier(0.4,0,0.2,1)}
+.panel-overlay.open .detail-panel{transform:translateX(0)}
+.panel-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.panel-avatar{width:52px;height:52px;border-radius:12px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent)}
+.panel-brand-info{flex:1;margin-left:14px}
+.panel-brand-name{font-size:20px;font-weight:600;margin-bottom:3px}
+.panel-brand-sub{font-size:13px;color:var(--text3)}
+.panel-close{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.panel-close:hover{border-color:var(--text2);color:var(--text)}
+.panel-actions{display:flex;gap:8px;margin-bottom:24px}
+.panel-btn{flex:1;padding:9px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition);text-align:center}
+.panel-btn:hover{border-color:var(--text2);color:var(--text)}
+.panel-btn.danger:hover{border-color:var(--target);color:var(--target)}
+.panel-section{margin-bottom:22px}
+.panel-section-title{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.panel-channel-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px}
+.panel-ch-left{display:flex;align-items:center;gap:10px}
+.panel-ch-link{font-size:12px;color:var(--accent);text-decoration:none;opacity:.7;transition:var(--transition)}
+.panel-ch-link:hover{opacity:1}
+.sheet-link{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);text-decoration:none;color:var(--text);font-size:13px;transition:var(--transition);margin-bottom:6px}
+.sheet-link:hover{border-color:var(--border2)}
+.sheet-icon{font-size:15px;color:var(--iherb)}
+.notes-box{font-size:13px;color:var(--text2);line-height:1.7;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;max-height:200px;overflow-y:auto;white-space:pre-wrap}
+.empty-notes{color:var(--text3);font-style:italic}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:500px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.form-input,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:var(--transition)}
+.form-input:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-textarea{resize:vertical;min-height:100px;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.btn-cancel{padding:9px 18px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:none;color:var(--text2);font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition)}
+.btn-cancel:hover{color:var(--text)}
+.btn-save{padding:9px 20px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#000;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:var(--transition)}
+.btn-save:hover{background:var(--accent2)}
+
+/* COMING SOON */
+.coming-soon{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center;gap:14px}
+.coming-soon-icon{font-size:40px;opacity:.2}
+.coming-soon-title{font-size:18px;font-weight:600}
+.coming-soon-sub{font-size:14px;color:var(--text3);max-width:320px;line-height:1.6}
+
+/* EMPTY / LOADING */
+.empty{text-align:center;padding:60px 24px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:12px;opacity:.3}
+.empty-title{font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.loading{text-align:center;padding:60px;color:var(--text3);font-size:14px}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.save-indicator{position:fixed;bottom:20px;right:20px;background:var(--iherb);color:#fff;padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;transform:translateY(60px);transition:transform .3s;z-index:400}
+.save-indicator.show{transform:translateY(0)}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">Brand Hub</div>
+      <div class="logo-sub">Partnership tracker</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Workspace</div>
+      <button class="nav-item active" onclick="showPage('partners')" id="nav-partners">
+        <span class="nav-icon">⬡</span> My partners
+        <span class="nav-badge" id="badge-partners">—</span>
+      </button>
+      <button class="nav-item" onclick="showPage('pipeline')" id="nav-pipeline">
+        <span class="nav-icon">◈</span> Pipeline
+        <span class="nav-badge">—</span>
+      </button>
+      <button class="nav-item" onclick="showPage('outreach')" id="nav-outreach">
+        <span class="nav-icon">◎</span> Outreach
+        <span class="nav-badge">—</span>
+      </button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="sync-btn" onclick="loadPartners()">↻ Sync sheets</button>
+      <div class="sync-time" id="sync-time">Not synced yet</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="topbar-title">My partners</div>
+        <div class="page-sub" id="topbar-sub">All active brand partnerships</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <span style="color:var(--text3)">⌕</span>
+          <input type="text" id="search-input" placeholder="Search brands..." oninput="renderPartners()">
+        </div>
+        <button class="add-btn" onclick="openModal()" id="add-btn">+ Add brand</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- PARTNERS -->
+      <div class="page active" id="page-partners">
+        <div class="auth-bar">
+          <div class="auth-status">
+            <span class="auth-dot" id="auth-dot"></span>
+            <span id="auth-label">Not signed in — read only</span>
+          </div>
+          <button class="auth-sign-btn" id="auth-btn" onclick="handleAuth()">Sign in with Google</button>
+        </div>
+        <div class="filter-row">
+          <button class="filter-chip active" onclick="filterChannel('all',this)">All channels</button>
+          <button class="filter-chip" onclick="filterChannel('target',this)"><span class="ch-dot" style="background:var(--target)"></span>Target</button>
+          <button class="filter-chip" onclick="filterChannel('chewy',this)"><span class="ch-dot" style="background:var(--chewy)"></span>Chewy</button>
+          <button class="filter-chip" onclick="filterChannel('iherb',this)"><span class="ch-dot" style="background:var(--iherb)"></span>iHerb</button>
+          <button class="filter-chip" onclick="filterChannel('quill',this)"><span class="ch-dot" style="background:var(--quill)"></span>Quill</button>
+        </div>
+        <div class="brands-grid" id="partners-grid">
+          <div class="loading" style="grid-column:1/-1"><span class="spin">↻</span> Loading your partners...</div>
+        </div>
+      </div>
+
+      <!-- PIPELINE -->
+      <div class="page" id="page-pipeline">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">◈</div>
+          <div class="coming-soon-title">Pipeline</div>
+          <div class="coming-soon-sub">Track every brand you're pursuing and where you stand with them. Coming next session.</div>
+        </div>
+      </div>
+
+      <!-- OUTREACH -->
+      <div class="page" id="page-outreach">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">◎</div>
+          <div class="coming-soon-title">Outreach & email tracking</div>
+          <div class="coming-soon-sub">Your email scripts, response tracking, and follow-up log will live here.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanelClick(event)">
+  <div class="detail-panel">
+    <div class="panel-header">
+      <div class="panel-avatar" id="panel-avatar">—</div>
+      <div class="panel-brand-info">
+        <div class="panel-brand-name" id="panel-name">—</div>
+        <div class="panel-brand-sub" id="panel-sub">—</div>
+      </div>
+      <button class="panel-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="panel-actions">
+      <button class="panel-btn" onclick="editCurrentBrand()">✎ Edit brand</button>
+      <button class="panel-btn danger" onclick="deleteCurrentBrand()">✕ Remove</button>
+    </div>
+
+    <div class="panel-section" id="ps-channels">
+      <div class="panel-section-title">Channels & listings</div>
+      <div id="panel-channels"></div>
+    </div>
+
+    <div class="panel-section" id="ps-sheet">
+      <div class="panel-section-title">Google sheet</div>
+      <div id="panel-sheet"></div>
+    </div>
+
+    <div class="panel-section" id="ps-project">
+      <div class="panel-section-title">Project</div>
+      <div id="panel-project"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Notes</div>
+      <div class="notes-box" id="panel-notes"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalClick(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add partner brand</div>
+    <div class="form-group">
+      <label class="form-label">Brand name *</label>
+      <input class="form-input" id="f-name" type="text" placeholder="e.g. Elan Baby">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Target listing link</label>
+      <input class="form-input" id="f-target" type="text" placeholder="https://www.target.com/b/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">iHerb listing link</label>
+      <input class="form-input" id="f-iherb" type="text" placeholder="https://www.iherb.com/c/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Chewy listing link</label>
+      <input class="form-input" id="f-chewy" type="text" placeholder="https://www.chewy.com/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Quill listing link</label>
+      <input class="form-input" id="f-quill" type="text" placeholder="https://www.quill.com/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Google Sheet link</label>
+      <input class="form-input" id="f-sheet" type="text" placeholder="https://docs.google.com/spreadsheets/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Project link (optional)</label>
+      <input class="form-input" id="f-project" type="text" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="f-notes" placeholder="Any context, next steps, reminders…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="save-btn" onclick="saveBrand()">Save brand</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-indicator" id="save-indicator">✓ Saved to sheet</div>
+
+<!-- GOOGLE IDENTITY -->
+<script src="https://accounts.google.com/gsi/client" async></script>
+
+<script>
+const SHEET_ID = "1a64rxl0Qwf7pJ_nr22VFqykVVsRcEVFff3YI4px96Rc";
+const TAB = "Live Partner Brands ";
+const API_KEY = "AIzaSyBoksaw0rYHlDQgz_C5gsUJEXVdm76aMyM";
+const CLIENT_ID = "782243679840-1lh1ce0p4fqt58fg945cq0gi9d0bv1ek.apps.googleusercontent.com";
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+
+// Col indices (0-based): Brand Name, Target Link, iHerb Link, Chewy Link, Quill Link, Google Sheet, Notes, Projects
+const COLS = {name:0, target:1, iherb:2, chewy:3, quill:4, sheet:5, notes:6, project:7};
+
+let brands = [];
+let activeChannel = 'all';
+let openBrandIdx = -1;
+let editingIdx = -1;
+let tokenClient = null;
+let accessToken = null;
+
+// ── AUTH ──
+window.onload = () => {
+  if(window.google) initAuth();
+  else document.querySelector('script[src*="accounts.google.com"]').addEventListener('load', initAuth);
+  loadPartners();
+};
+
+function initAuth() {
+  try {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (resp) => {
+        if(resp.access_token) {
+          accessToken = resp.access_token;
+          setAuthUI(true);
+        }
+      }
+    });
+  } catch(e) { console.log('Auth init failed', e); }
+}
+
+function handleAuth() {
+  if(accessToken) {
+    accessToken = null;
+    setAuthUI(false);
+  } else {
+    if(tokenClient) tokenClient.requestAccessToken();
+    else alert('Auth not ready yet. Please wait a moment and try again.');
+  }
+}
+
+function setAuthUI(signedIn) {
+  document.getElementById('auth-dot').className = 'auth-dot' + (signedIn?' connected':'');
+  document.getElementById('auth-label').textContent = signedIn ? 'Signed in — edits save to sheet' : 'Not signed in — read only';
+  document.getElementById('auth-btn').textContent = signedIn ? 'Sign out' : 'Sign in with Google';
+}
+
+// ── LOAD DATA ──
+async function loadPartners() {
+  document.getElementById('sync-time').textContent = 'Syncing...';
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(TAB)}?key=${API_KEY}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if(d.error) throw new Error(d.error.message);
+    const rows = (d.values || []).slice(1).filter(r => r && r[0]);
+    brands = rows.map((r, i) => ({
+      idx: i + 2, // 1-indexed row in sheet (row 1 = header, data starts row 2)
+      name: (r[COLS.name]||'').trim(),
+      target: (r[COLS.target]||'').trim(),
+      iherb: (r[COLS.iherb]||'').trim(),
+      chewy: (r[COLS.chewy]||'').trim(),
+      quill: (r[COLS.quill]||'').trim(),
+      sheet: (r[COLS.sheet]||'').trim(),
+      notes: (r[COLS.notes]||'').trim(),
+      project: (r[COLS.project]||'').trim(),
+    }));
+    document.getElementById('badge-partners').textContent = brands.length;
+    renderPartners();
+    const now = new Date();
+    document.getElementById('sync-time').textContent = 'Synced ' + now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('sync-time').textContent = 'Sync failed';
+    document.getElementById('partners-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⚠</div><div class="empty-title">Could not load sheet</div><div class="empty-sub">${e.message}</div></div>`;
+  }
+}
+
+// ── RENDER ──
+function getChannels(b) {
+  const ch = [];
+  if(b.target) ch.push('target');
+  if(b.iherb) ch.push('iherb');
+  if(b.chewy) ch.push('chewy');
+  if(b.quill) ch.push('quill');
+  return ch;
+}
+
+function initials(name) {
+  return name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+}
+
+function chTag(c) {
+  const labels = {target:'Target', chewy:'Chewy', iherb:'iHerb', quill:'Quill'};
+  return `<span class="ch-tag ch-${c}">${labels[c]}</span>`;
+}
+
+function renderPartners() {
+  const q = (document.getElementById('search-input').value||'').toLowerCase();
+  let list = brands.filter(b => {
+    const matchCh = activeChannel === 'all' || getChannels(b).includes(activeChannel);
+    const matchQ = !q || b.name.toLowerCase().includes(q);
+    return matchCh && matchQ;
+  });
+  const grid = document.getElementById('partners-grid');
+  if(!list.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⬡</div><div class="empty-title">No partners found</div><div class="empty-sub">Try a different filter or add a new brand</div></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(b => {
+    const chs = getChannels(b);
+    const chCount = chs.length;
+    return `<div class="brand-card" onclick="openPanel('${b.name}')">
+      <div class="card-top">
+        <div class="brand-avatar">${initials(b.name)}</div>
+        <div class="brand-info">
+          <div class="brand-name">${b.name}</div>
+          <div class="brand-category">${chCount} channel${chCount!==1?'s':''}</div>
+        </div>
+      </div>
+      <div class="channel-tags">${chs.map(chTag).join('') || '<span style="color:var(--text3);font-size:12px">No channels yet</span>'}</div>
+      <div class="card-footer">
+        <span class="card-meta">${b.notes ? '📝 Has notes' : ''}</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterChannel(ch, el) {
+  activeChannel = ch;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderPartners();
+}
+
+// ── PANEL ──
+function openPanel(name) {
+  const b = brands.find(x=>x.name===name);
+  if(!b) return;
+  openBrandIdx = b.idx;
+  document.getElementById('panel-avatar').textContent = initials(b.name);
+  document.getElementById('panel-name').textContent = b.name;
+  const chs = getChannels(b);
+  document.getElementById('panel-sub').textContent = chs.length ? chs.map(c=>({target:'Target',chewy:'Chewy',iherb:'iHerb',quill:'Quill'}[c])).join(' · ') : 'No channels yet';
+
+  // Channels
+  const chLinks = [];
+  if(b.target) chLinks.push({label:'Target', ch:'target', url:b.target});
+  if(b.iherb) chLinks.push({label:'iHerb', ch:'iherb', url:b.iherb});
+  if(b.chewy) chLinks.push({label:'Chewy', ch:'chewy', url:b.chewy});
+  if(b.quill) chLinks.push({label:'Quill', ch:'quill', url:b.quill});
+  const psChannels = document.getElementById('ps-channels');
+  if(chLinks.length) {
+    psChannels.style.display = 'block';
+    document.getElementById('panel-channels').innerHTML = chLinks.map(c=>`
+      <div class="panel-channel-row">
+        <div class="panel-ch-left"><span class="ch-tag ch-${c.ch}">${c.label}</span></div>
+        <a class="panel-ch-link" href="${c.url}" target="_blank">View listing ↗</a>
+      </div>`).join('');
+  } else { psChannels.style.display = 'none'; }
+
+  // Sheet
+  const psSheet = document.getElementById('ps-sheet');
+  if(b.sheet) {
+    psSheet.style.display = 'block';
+    document.getElementById('panel-sheet').innerHTML = `
+      <a class="sheet-link" href="${b.sheet}" target="_blank">
+        <span class="sheet-icon">⊞</span>
+        <span style="flex:1;font-weight:500">${b.name} — Google Sheet</span>
+        <span style="color:var(--text3);font-size:13px">↗</span>
+      </a>`;
+  } else { psSheet.style.display = 'none'; }
+
+  // Project
+  const psProject = document.getElementById('ps-project');
+  if(b.project) {
+    psProject.style.display = 'block';
+    document.getElementById('panel-project').innerHTML = `
+      <a class="sheet-link" href="${b.project}" target="_blank">
+        <span class="sheet-icon" style="color:var(--quill)">◈</span>
+        <span style="flex:1;font-weight:500">Project link</span>
+        <span style="color:var(--text3);font-size:13px">↗</span>
+      </a>`;
+  } else { psProject.style.display = 'none'; }
+
+  // Notes
+  const notesEl = document.getElementById('panel-notes');
+  if(b.notes) {
+    notesEl.textContent = b.notes;
+    notesEl.classList.remove('empty-notes');
+  } else {
+    notesEl.textContent = 'No notes yet.';
+    notesEl.classList.add('empty-notes');
+  }
+
+  document.getElementById('panel-overlay').classList.add('open');
+}
+
+function closePanel() { document.getElementById('panel-overlay').classList.remove('open'); }
+function closePanelClick(e) { if(e.target===document.getElementById('panel-overlay')) closePanel(); }
+
+function editCurrentBrand() {
+  const b = brands.find(x=>x.idx===openBrandIdx);
+  if(!b) return;
+  closePanel();
+  openModal(b);
+}
+
+async function deleteCurrentBrand() {
+  const b = brands.find(x=>x.idx===openBrandIdx);
+  if(!b) return;
+  if(!confirm(`Remove ${b.name} from your partners?`)) return;
+  if(!accessToken) { alert('Please sign in with Google to make edits.'); return; }
+  closePanel();
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(TAB)}!A${b.idx}:I${b.idx}?valueInputOption=RAW`;
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchClear`, {
+      method: 'POST',
+      headers: {'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
+      body: JSON.stringify({ranges:[`${TAB}!A${b.idx}:I${b.idx}`]})
+    });
+    showSaved('✓ Brand removed');
+    await loadPartners();
+  } catch(e) { alert('Could not delete: ' + e.message); }
+}
+
+// ── MODAL ──
+function openModal(brand) {
+  editingIdx = brand ? brand.idx : -1;
+  document.getElementById('modal-title').textContent = brand ? 'Edit brand' : 'Add partner brand';
+  document.getElementById('f-name').value = brand?.name || '';
+  document.getElementById('f-target').value = brand?.target || '';
+  document.getElementById('f-iherb').value = brand?.iherb || '';
+  document.getElementById('f-chewy').value = brand?.chewy || '';
+  document.getElementById('f-quill').value = brand?.quill || '';
+  document.getElementById('f-sheet').value = brand?.sheet || '';
+  document.getElementById('f-project').value = brand?.project || '';
+  document.getElementById('f-notes').value = brand?.notes || '';
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-name').focus(), 100);
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingIdx=-1; }
+function closeModalClick(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+async function saveBrand() {
+  const name = document.getElementById('f-name').value.trim();
+  if(!name) { document.getElementById('f-name').focus(); return; }
+  if(!accessToken) { alert('Please sign in with Google first to save changes to your sheet.'); return; }
+
+  const row = [
+    name,
+    document.getElementById('f-target').value.trim(),
+    document.getElementById('f-iherb').value.trim(),
+    document.getElementById('f-chewy').value.trim(),
+    document.getElementById('f-quill').value.trim(),
+    document.getElementById('f-sheet').value.trim(),
+    document.getElementById('f-notes').value.trim(),
+    document.getElementById('f-project').value.trim(),
+  ];
+
+  try {
+    document.getElementById('save-btn').textContent = 'Saving...';
+    let range;
+    if(editingIdx > 0) {
+      range = `${TAB}!A${editingIdx}:H${editingIdx}`;
+    } else {
+      // Append to next empty row
+      range = `${TAB}!A:H`;
+    }
+    const method = editingIdx > 0 ? 'PUT' : 'POST';
+    const endpoint = editingIdx > 0
+      ? `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`
+      : `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+
+    await fetch(endpoint, {
+      method,
+      headers: {'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
+      body: JSON.stringify({range, majorDimension:'ROWS', values:[row]})
+    });
+    closeModal();
+    showSaved('✓ Saved to sheet');
+    await loadPartners();
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+  }
+  document.getElementById('save-btn').textContent = 'Save brand';
+}
+
+function showSaved(msg) {
+  const el = document.getElementById('save-indicator');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+// ── PAGES ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  const titles = {
+    partners: ['My partners','All active brand partnerships'],
+    pipeline: ['Pipeline','Brands you\'re pursuing'],
+    outreach: ['Outreach','Email scripts & response tracking']
+  };
+  document.getElementById('topbar-title').textContent = titles[name][0];
+  document.getElementById('topbar-sub').textContent = titles[name][1];
+  document.getElementById('add-btn').style.display = name==='partners'?'flex':'none';
+}
+</script>
+</body>
+</html>
