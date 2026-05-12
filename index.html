@@ -182,7 +182,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <nav class="sidebar-nav">
       <div class="nav-section">Workspace</div>
       <button class="nav-item active" onclick="showPage('partners')" id="nav-partners">
-        <span class="nav-icon">⬡</span> My partners
+        <span class="nav-icon">⬡</span> All Brands
         <span class="nav-badge" id="badge-partners">—</span>
       </button>
       <button class="nav-item" onclick="showPage('pipeline')" id="nav-pipeline">
@@ -203,8 +203,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   <div class="main">
     <div class="topbar">
       <div>
-        <div class="page-title" id="topbar-title">My partners</div>
-        <div class="page-sub" id="topbar-sub">All active brand partnerships</div>
+        <div class="page-title" id="topbar-title">All Brands</div>
+        <div class="page-sub" id="topbar-sub">All your brand partnerships</div>
       </div>
       <div class="topbar-right">
         <div class="search-box">
@@ -232,6 +232,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
           <button class="filter-chip" onclick="filterChannel('chewy',this)"><span class="ch-dot" style="background:var(--chewy)"></span>Chewy</button>
           <button class="filter-chip" onclick="filterChannel('iherb',this)"><span class="ch-dot" style="background:var(--iherb)"></span>iHerb</button>
           <button class="filter-chip" onclick="filterChannel('quill',this)"><span class="ch-dot" style="background:var(--quill)"></span>Quill</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;align-items:center">
+          <span style="font-size:12px;color:var(--text3);font-weight:500">Sort:</span>
+          <button class="filter-chip active" id="sort-az" onclick="setSort('az',this)">A → Z</button>
+          <button class="filter-chip" id="sort-za" onclick="setSort('za',this)">Z → A</button>
         </div>
         <div class="brands-grid" id="partners-grid">
           <div class="loading" style="grid-column:1/-1"><span class="spin">↻</span> Loading your partners...</div>
@@ -281,6 +286,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
       <div id="panel-channels"></div>
     </div>
 
+    <div class="panel-section" id="ps-ownership">
+      <div class="panel-section-title">Ownership status</div>
+      <div id="panel-ownership"></div>
+    </div>
+
     <div class="panel-section" id="ps-sheet">
       <div class="panel-section-title">Google sheet</div>
       <div id="panel-sheet"></div>
@@ -301,7 +311,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <!-- ADD / EDIT MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalClick(event)">
   <div class="modal">
-    <div class="modal-title" id="modal-title">Add partner brand</div>
+    <div class="modal-title" id="modal-title">Add brand</div>
     <div class="form-group">
       <label class="form-label">Brand name *</label>
       <input class="form-input" id="f-name" type="text" placeholder="e.g. Elan Baby">
@@ -325,6 +335,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="form-group">
       <label class="form-label">Google Sheet link</label>
       <input class="form-input" id="f-sheet" type="text" placeholder="https://docs.google.com/spreadsheets/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ownership status</label>
+      <input class="form-input" id="f-ownership" type="text" placeholder="e.g. Exclusive, Non-exclusive, Consignment…">
     </div>
     <div class="form-group">
       <label class="form-label">Project link (optional)</label>
@@ -354,7 +368,7 @@ const GID = "0"; // tab gid for CSV export
 const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 // Col indices (0-based): Brand Name, Target Link, iHerb Link, Chewy Link, Quill Link, Google Sheet, Notes, Projects
-const COLS = {name:0, target:1, iherb:2, chewy:3, quill:4, sheet:5, notes:6, project:7};
+const COLS = {name:0, target:1, iherb:2, chewy:3, quill:4, sheet:5, notes:6, ownership:7, project:8};
 
 let brands = [];
 let activeChannel = 'all';
@@ -431,6 +445,7 @@ async function loadPartners() {
       quill: (r[COLS.quill]||'').trim(),
       sheet: (r[COLS.sheet]||'').trim(),
       notes: (r[COLS.notes]||'').trim(),
+      ownership: (r[COLS.ownership]||'').trim(),
       project: (r[COLS.project]||'').trim(),
     }));
     document.getElementById('badge-partners').textContent = brands.length;
@@ -478,6 +493,14 @@ function chTag(c) {
   return `<span class="ch-tag ch-${c}">${labels[c]}</span>`;
 }
 
+let activeSort = 'az';
+function setSort(s, el) {
+  activeSort = s;
+  document.querySelectorAll('#sort-az,#sort-za').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderPartners();
+}
+
 function renderPartners() {
   const q = (document.getElementById('search-input').value||'').toLowerCase();
   let list = brands.filter(b => {
@@ -485,6 +508,7 @@ function renderPartners() {
     const matchQ = !q || b.name.toLowerCase().includes(q);
     return matchCh && matchQ;
   });
+  list.sort((a,b) => activeSort==='az' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
   const grid = document.getElementById('partners-grid');
   if(!list.length) {
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⬡</div><div class="empty-title">No partners found</div><div class="empty-sub">Try a different filter or add a new brand</div></div>`;
@@ -502,6 +526,7 @@ function renderPartners() {
         </div>
       </div>
       <div class="channel-tags">${chs.map(chTag).join('') || '<span style="color:var(--text3);font-size:12px">No channels yet</span>'}</div>
+      ${b.ownership ? `<div style="margin-bottom:10px"><span class="ownership-badge">${b.ownership}</span></div>` : ''}
       <div class="card-footer">
         <span class="card-meta">${b.notes ? '📝 Has notes' : ''}</span>
         <span class="card-arrow">→</span>
@@ -542,6 +567,13 @@ function openPanel(name) {
         <a class="panel-ch-link" href="${c.url}" target="_blank">View listing ↗</a>
       </div>`).join('');
   } else { psChannels.style.display = 'none'; }
+
+  // Ownership
+  const psOwnership = document.getElementById('ps-ownership');
+  if(b.ownership) {
+    psOwnership.style.display='block';
+    document.getElementById('panel-ownership').innerHTML = `<div style="padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--accent)">${b.ownership}</div>`;
+  } else { psOwnership.style.display='none'; }
 
   // Sheet
   const psSheet = document.getElementById('ps-sheet');
@@ -611,13 +643,14 @@ async function deleteCurrentBrand() {
 // ── MODAL ──
 function openModal(brand) {
   editingIdx = brand ? brand.idx : -1;
-  document.getElementById('modal-title').textContent = brand ? 'Edit brand' : 'Add partner brand';
+  document.getElementById('modal-title').textContent = brand ? 'Edit brand' : 'Add brand';
   document.getElementById('f-name').value = brand?.name || '';
   document.getElementById('f-target').value = brand?.target || '';
   document.getElementById('f-iherb').value = brand?.iherb || '';
   document.getElementById('f-chewy').value = brand?.chewy || '';
   document.getElementById('f-quill').value = brand?.quill || '';
   document.getElementById('f-sheet').value = brand?.sheet || '';
+  document.getElementById('f-ownership').value = brand?.ownership || '';
   document.getElementById('f-project').value = brand?.project || '';
   document.getElementById('f-notes').value = brand?.notes || '';
   document.getElementById('modal-overlay').classList.add('open');
@@ -639,6 +672,7 @@ async function saveBrand() {
     document.getElementById('f-quill').value.trim(),
     document.getElementById('f-sheet').value.trim(),
     document.getElementById('f-notes').value.trim(),
+    document.getElementById('f-ownership').value.trim(),
     document.getElementById('f-project').value.trim(),
   ];
 
@@ -684,7 +718,7 @@ function showPage(name) {
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   const titles = {
-    partners: ['My partners','All active brand partnerships'],
+    partners: ['All Brands','All your brand partnerships'],
     pipeline: ['Pipeline','Brands you\'re pursuing'],
     outreach: ['Outreach','Email scripts & response tracking']
   };
